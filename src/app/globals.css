@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy: #1f3044;
+  --navy-soft: #34465a;
+  --olive: #7e9073;
+  --olive-light: #a8b59a;
+  --olive-deep: #596c50;
+  --background: #ffffff;
+  --warm: #f8f9f6;
+  --foreground: #202820;
+  --muted-foreground: #667066;
+  --primary: var(--olive-deep);
+  --primary-foreground: #ffffff;
+  --secondary: var(--navy);
+  --secondary-foreground: #ffffff;
+  --accent: var(--olive-light);
+  --border: #e5e9e2;
+  --destructive: #b84242;
+  --success: #39734a;
+  --ring: var(--olive);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  @apply bg-background text-foreground antialiased;
+  font-family: "Cairo Variable", "Inter Variable", system-ui, sans-serif;
+}
+html[lang="en"] body { font-family: "Inter Variable", "Cairo Variable", system-ui, sans-serif; }
+
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ================= Motion & polish ================= */
+html { scroll-padding-top: 5rem; }
+
+@keyframes page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes fade-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slide-down { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.4); } 100% { transform: scale(1); } }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+.animate-page-in { animation: page-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-fade-up { animation: fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: var(--delay, 0ms); }
+.animate-fade-in { animation: fade-in 0.5s ease both; }
+.animate-slide-down { animation: slide-down 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-pop { animation: pop 0.45s ease; }
+
+/* Scroll reveal: elements below the fold start hidden (set by <Reveal/>) and glide in. */
+[data-reveal] {
+  transition: opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1), transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+[data-reveal="pending"] { opacity: 0; transform: translateY(28px); }
+
+/* Loading skeletons */
+.skeleton {
+  border-radius: 1rem;
+  background: linear-gradient(90deg, var(--warm) 25%, color-mix(in srgb, var(--border) 60%, white) 50%, var(--warm) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+/* Press feedback on every enabled button */
+button:not(:disabled):active { scale: 0.97; }
+button { transition: scale 0.12s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease; }
+
+/* Admin: soft row highlight */
+.admin-shell tbody tr { transition: background-color 0.15s ease; }
+.admin-shell tbody tr:hover { background-color: color-mix(in srgb, var(--warm) 80%, transparent); }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal], [data-reveal="pending"] { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .animate-page-in, .animate-fade-up, .animate-fade-in, .animate-slide-down, .animate-pop, .skeleton { animation: none !important; }
+  button:not(:disabled):active { scale: none; }
+}
