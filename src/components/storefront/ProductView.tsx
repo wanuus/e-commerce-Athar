@@ -24,7 +24,7 @@ export function ProductView({ locale, basePrice, compareAt, variants, images, si
   const [color, setColor] = useState(initialColor);
   const [size, setSize] = useState<string | null>(null);
   const [qty, setQty] = useState(1);
-  const [imgIdx, setImgIdx] = useState(0);
+  const [imgIdx, setImgIdx] = useState(() => Math.max(0, images.findIndex((i) => i.colorName === initialColor)));
   const [state, action, pending] = useActionState<AddState, FormData>(addToCart, { status: "idle" });
 
   const find = (c: string, s: string) => variants.find((v) => v.colorName === c && v.size === s);
@@ -33,15 +33,29 @@ export function ProductView({ locale, basePrice, compareAt, variants, images, si
   const price = selected?.price ?? basePrice;
   const pct = !selected || selected.price === basePrice ? discountPercent(price, compareAt) : 0;
 
-  const shown = images.filter((i) => i.colorName === color || i.colorName === null);
-  const gallery = shown.length ? shown : images;
+  // The gallery always shows every photo, so a photo linked to another color can be clicked to switch to that color.
+  const gallery = images;
   const main = gallery[Math.min(imgIdx, Math.max(gallery.length - 1, 0))];
 
-  const pickColor = (c: string) => {
+  /** Selects a color (keeps the size only if that size exists for the new color). Does not touch the photo. */
+  const applyColor = (c: string) => {
     setColor(c);
-    setImgIdx(0);
     setQty(1);
     if (size && !((find(c, size)?.available ?? 0) > 0)) setSize(null);
+  };
+
+  /** Clicking a color swatch: select it AND jump to the first photo linked to that color. */
+  const pickColor = (c: string) => {
+    applyColor(c);
+    const idx = images.findIndex((i) => i.colorName === c);
+    if (idx >= 0 && images[imgIdx]?.colorName !== c) setImgIdx(idx);
+  };
+
+  /** Clicking a thumbnail: show it AND select the color it is linked to (photos for all colors leave the color alone). */
+  const pickImage = (i: number) => {
+    setImgIdx(i);
+    const c = images[i]?.colorName;
+    if (c && c !== color && colors.some((x) => x.colorName === c)) applyColor(c);
   };
 
   const stockText = !selected ? t("selectSize") : available <= 0 ? t("outOfStock") : available <= 5 ? t("onlyLeft", { count: available }) : t("inStock");
@@ -63,7 +77,7 @@ export function ProductView({ locale, basePrice, compareAt, variants, images, si
           <ul className="mt-3 flex gap-2 overflow-x-auto">
             {gallery.map((im, i) => (
               <li key={im.url}>
-                <button type="button" onClick={() => setImgIdx(i)} aria-label={`${name} ${i + 1}`} aria-current={i === imgIdx} className={`relative block h-20 w-16 overflow-hidden rounded-xl border ${i === imgIdx ? "border-navy" : "border-border"}`}>
+                <button type="button" onClick={() => pickImage(i)} aria-label={`${name} ${i + 1}`} aria-current={i === imgIdx} className={`relative block h-20 w-16 overflow-hidden rounded-xl border ${i === imgIdx ? "border-navy" : "border-border"}`}>
                   <Image src={im.url} alt="" fill sizes="64px" className="object-cover" />
                 </button>
               </li>
